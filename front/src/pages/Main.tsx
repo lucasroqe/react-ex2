@@ -6,7 +6,19 @@ import { useEffect, useState } from "react";
 
 export function Main() {
   const { rgb, setColor } = useColor();
-  const [currentId, setCurrentId] = useState(0); 
+  const [currentId, setCurrentId] = useState(0);
+
+  // Função para buscar o último valor salvo
+  const ultimoRGB = async () => {
+    const lastRGB = await rgbService.get(undefined);
+
+    if ('error' in lastRGB) {
+      console.error(lastRGB.error);
+      return;
+    }
+
+    setColor(lastRGB.r, lastRGB.g, lastRGB.b); 
+  };
 
   const buscaRGB = async (id: number | undefined) => {
     const rgbData = await rgbService.get(id);
@@ -17,11 +29,16 @@ export function Main() {
     }
 
     const { r, g, b } = rgbData;
-    setColor(r, g, b); 
+    setColor(r, g, b);
   };
 
   useEffect(() => {
-    buscaRGB(currentId); 
+    if (currentId === 0) {
+      // Chama o último valor salvo ao carregar a página
+      ultimoRGB();
+    } else {
+      buscaRGB(currentId);
+    }
   }, [currentId]);
 
   const salvaRGB = async () => {
@@ -34,10 +51,10 @@ export function Main() {
   };
 
   const teclaSeta = (event: any) => {
-    if (event.key === 'ArrowRight') setCurrentId(currentId + 1); 
+    if (event.key === 'ArrowRight') setCurrentId(currentId + 1);
 
     if (event.key === 'ArrowLeft') {
-      if (currentId > 0) setCurrentId(currentId - 1); 
+      if (currentId > 0) setCurrentId(currentId - 1);
     }
   };
 
